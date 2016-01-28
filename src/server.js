@@ -92,7 +92,7 @@ function optimizeImage(file) {
         lossy: 20, // default value: 20
         force: 1, //  overwrite original file and  do not save original image
         onFileProcessed: function (newFile, oldFile) { // callback when a file is processed
-
+            console.log("Optimized file:", file);
         },
         onComplete: function(count) { // callback when all files are processed
 
@@ -108,8 +108,9 @@ router.post('/upload', bodyParser, function *(next) {
         yield next;
     }
     var id = shortid.generate();
-    yield fs.rename(upload.path, path.join(uploadsDir, id));
-    optimizeImage(path.join(uploadsDir, id));
+    var filePath = path.join(uploadsDir, id);
+    yield fs.rename(upload.path, filePath);
+    optimizeImage(filePath);
     console.log('Saved file', id);
     this.status = 200;
     this.body = (this.request.protocol || 'http') + '://' + this.request.host + '/' + id + '.png';
