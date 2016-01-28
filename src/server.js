@@ -76,7 +76,7 @@ router.post('/upload', bodyParser, function *(next) {
     yield fs.rename(upload.path, path.join(uploadsDir, id));
     console.log('Saved file', id);
     this.status = 200;
-    this.body = id;
+    this.body = (request.protocol || 'http') + '://' + request.host + '/' + id + '.png';
     this.set('X-Gyazo-Id', id);
     yield next;
 });
@@ -85,7 +85,6 @@ router.get('image', /^\/([0-9a-zA-Z_\-]+)(?:\.jpg|\.gif|\.png|\.bmp)?$/, functio
     console.log('GET', this.params[0]);
     var file = path.join(uploadsDir, this.params[0]);
     if (yield fs.exists(file)) {
-        console.log('Reading chunk from:', file);
         var buffer = readChunk.sync(file, 0, 262);
         var type = fileType(buffer);
         if (['png', 'jpg', 'bmp', 'gif'].indexOf(type.ext) != -1) {
