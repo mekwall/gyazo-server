@@ -1,0 +1,28 @@
+{
+  "name": "mekwall",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "dokku@writeless.se:mekwall"
+  },
+  "author": "Marcus Ekwall <marcus.ekwall@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "co-fs-extra": "^1.1.0",
+    "file-type": "^3.6.0",
+    "koa": "^1.1.2",
+    "koa-body": "^1.4.0",
+    "koa-router": "^5.3.0",
+    "mime-types": "^2.1.9",
+    "multiline": "^1.0.2",
+    "read-chunk": "^1.0.1",
+    "shortid": "^2.2.4",
+    "thunkify": "^2.1.2"
+  }
+}
