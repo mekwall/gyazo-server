@@ -76,7 +76,7 @@ router.post('/upload', bodyParser, function *(next) {
     yield fs.rename(upload.path, path.join(uploadsDir, id));
     console.log('Saved file', id);
     this.status = 200;
-    this.body = (request.protocol || 'http') + '://' + request.host + '/' + id + '.png';
+    this.body = (this.request.protocol || 'http') + '://' + this.request.host + '/' + id + '.png';
     this.set('X-Gyazo-Id', id);
     yield next;
 });
