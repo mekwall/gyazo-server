@@ -45,28 +45,25 @@ router.get('/', function *(next) {
       <!doctype html>
       <html>
           <body>
-              <form action="/upload" enctype="multipart/form-data" method="post">
-              <input type="text" name="username" placeholder="username"><br>
-              <input type="text" name="title" placeholder="title of file"><br>
-              <input type="file" name="uploads" multiple="multiple"><br>
-              <button type="submit">Upload</button>
+              <h1>Hi!</h1>
           </body>
       </html>
   */});
 });
 
 router.post('/upload', bodyParser, function *(next) {
+    console.log(this.request.body.files);
     var upload = this.request.body.files.uploads;
     var id = shortid.generate();
     yield fs.rename(upload.path, path.join(process.cwd(), '/uploads', id));
     console.log('Saved file', id);
     this.status = 200;
-    this.body = '/' + id;
+    this.body = id;
     this.set('X-Gyazo-Id', id);
     yield next;
 });
 
-router.get('image', /^\/([0-9a-zA-Z]+)(?:\.jpg|\.gif|\.png|\.bmp)?$/, function *(next) {
+router.get('image', /^\/([0-9a-zA-Z_\-]+)(?:\.jpg|\.gif|\.png|\.bmp)?$/, function *(next) {
     console.log('GET', this.params[0]);
     var file = path.join(process.cwd(), '/uploads', this.params[0]);
     if (yield fs.exists(file)) {
