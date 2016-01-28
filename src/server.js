@@ -52,8 +52,11 @@ router.get('/', function *(next) {
 });
 
 router.post('/upload', bodyParser, function *(next) {
-    console.log(this.request.body.files);
-    var upload = this.request.body.files.uploads;
+    var upload = this.request.body.files.imagedata;
+    if (!upload) {
+        this.status = 400;
+        yield next;
+    }
     var id = shortid.generate();
     yield fs.rename(upload.path, path.join(process.cwd(), '/uploads', id));
     console.log('Saved file', id);
