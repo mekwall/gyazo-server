@@ -92,7 +92,7 @@ router.get('image', /^\/([0-9a-zA-Z_\-]+)(?:\.jpg|\.gif|\.png|\.bmp)?$/, functio
             this.status = 200;
             this.type = type.mime;
             this.set({
-                'Cache-Control': 'public'
+                'Cache-Control': 'max-age=31556926'
             });
             this.body = yield fs.createReadStream(file);
         } else {
