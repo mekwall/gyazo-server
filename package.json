@@ -25,6 +25,7 @@
     "multiline": "^1.0.2",
     "read-chunk": "^1.0.1",
     "shortid": "^2.2.4",
-    "thunkify": "^2.1.2"
+    "thunkify": "^2.1.2",
+    "imgopti": "^0.2.2"
   }
 }
