@@ -2,6 +2,7 @@ const fs = require('co-fs-extra');
 const path = require('path');
 const shortid = require('shortid');
 const mime = require('mime-types');
+const cache = require('lru-cache')();
 const readChunk = require('read-chunk');
 const fileType = require('file-type');
 const thunkify = require('thunkify');
@@ -27,6 +28,16 @@ if (!fs.existsSync(tmpDir)) {
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
 }
+
+app.use(require('koa-cash')({
+    maxAge: 31556926,
+    get (key) {
+        return cache.get(key);
+    },
+    set (key, value, maxAge) {
+        return cache.set(key, value);
+    }
+}));
 
 app.use(function *pageNotFound(next){
     yield next;
@@ -83,6 +94,7 @@ router.post('/upload', bodyParser, function *(next) {
 
 router.get('image', /^\/([0-9a-zA-Z_\-]+)(?:\.jpg|\.gif|\.png|\.bmp)?$/, function *(next) {
     console.log('GET', this.params[0]);
+    if (yield this.cashed()) return;
     var file = path.join(uploadsDir, this.params[0]);
     if (yield fs.exists(file)) {
         var buffer = readChunk.sync(file, 0, 262);
@@ -90,9 +102,6 @@ router.get('image', /^\/([0-9a-zA-Z_\-]+)(?:\.jpg|\.gif|\.png|\.bmp)?$/, functio
         if (['png', 'jpg', 'bmp', 'gif'].indexOf(type.ext) != -1) {
             this.status = 200;
             this.type = type.mime;
-            this.set({
-                'Cache-Control': 'max-age=31556926'
-            });
             this.body = yield fs.createReadStream(file);
         } else {
             this.status = 500;
