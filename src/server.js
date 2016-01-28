@@ -9,9 +9,24 @@ const multiline = require('multiline');
 const koa = require('koa');
 const app = koa();
 const router = require('koa-router')();
+
+const tmpDir = path.join(process.cwd(), '/tmp');
+const uploadsDir = path.join(process.cwd(), '/uploads');
+
 const bodyParser = require('koa-body')({ 
-    multipart: true
+    multipart: true,
+    formidable: {
+        uploadDir: tmpDir
+    }
 });
+
+if (!fs.existsSync(tmpDir)) {
+    fs.mkdirSync(tmpDir);
+}
+
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+}
 
 app.use(function *pageNotFound(next){
     yield next;
@@ -58,7 +73,7 @@ router.post('/upload', bodyParser, function *(next) {
         yield next;
     }
     var id = shortid.generate();
-    yield fs.rename(upload.path, path.join(process.cwd(), '/uploads', id));
+    yield fs.rename(upload.path, path.join(uploadsDir, id));
     console.log('Saved file', id);
     this.status = 200;
     this.body = id;
@@ -68,7 +83,7 @@ router.post('/upload', bodyParser, function *(next) {
 
 router.get('image', /^\/([0-9a-zA-Z_\-]+)(?:\.jpg|\.gif|\.png|\.bmp)?$/, function *(next) {
     console.log('GET', this.params[0]);
-    var file = path.join(process.cwd(), '/uploads', this.params[0]);
+    var file = path.join(uploadsDir, this.params[0]);
     if (yield fs.exists(file)) {
         console.log('Reading chunk from:', file);
         var buffer = readChunk.sync(file, 0, 262);
