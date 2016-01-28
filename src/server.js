@@ -7,6 +7,8 @@ const readChunk = require('read-chunk');
 const fileType = require('file-type');
 const thunkify = require('thunkify');
 const multiline = require('multiline');
+const imgopti = require('imgopti');
+
 const koa = require('koa');
 const app = koa();
 const router = require('koa-router')();
@@ -77,6 +79,28 @@ router.get('/', function *(next) {
   */});
 });
 
+function optimizeImage(file) {
+    var optimizer = new imgopti({
+        input: [file], // directory or file
+        output: null, // output directory, if not , overwrite original file and save original file like xxx-old.xxx
+        matchRules: [ // image filter rules
+            '*.jpeg',
+            '*.jpg',
+            '*.png',
+            '*.gif'
+        ],
+        lossy: 20, // default value: 20
+        force: 1, //  overwrite original file and  do not save original image
+        onFileProcessed: function (newFile, oldFile) { // callback when a file is processed
+
+        },
+        onComplete: function(count) { // callback when all files are processed
+
+        }
+    });
+    optimizer.process();
+};
+
 router.post('/upload', bodyParser, function *(next) {
     var upload = this.request.body.files.imagedata;
     if (!upload) {
@@ -85,6 +109,7 @@ router.post('/upload', bodyParser, function *(next) {
     }
     var id = shortid.generate();
     yield fs.rename(upload.path, path.join(uploadsDir, id));
+    optimizeImage(path.join(uploadsDir, id));
     console.log('Saved file', id);
     this.status = 200;
     this.body = (this.request.protocol || 'http') + '://' + this.request.host + '/' + id + '.png';

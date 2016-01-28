@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "dokku@writeless.se:mekwall"
+    "url": "git@github.com:mekwall/gyazo-server.git"
   },
   "author": "Marcus Ekwall <marcus.ekwall@gmail.com>",
   "license": "ISC",
