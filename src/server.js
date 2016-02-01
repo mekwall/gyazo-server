@@ -1,5 +1,5 @@
 const fs = require('fs');
-const cofs = require('co-cofs-extra');
+const cofs = require('co-fs-extra');
 const path = require('path');
 const shortid = require('shortid');
 const mime = require('mime-types');
