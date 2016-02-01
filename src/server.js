@@ -1,4 +1,5 @@
-const fs = require('co-fs-extra');
+const fs = require('fs');
+const cofs = require('co-cofs-extra');
 const path = require('path');
 const shortid = require('shortid');
 const mime = require('mime-types');
@@ -71,18 +72,23 @@ app.use(function *pageNotFound(next){
 });
 
 router.get('/', function *(next) {
-  this.set('Content-Type', 'text/html');
-  this.body = multiline.stripIndent(function(){/*
-      <!doctype html>
-      <html>
-          <body>
-              <h1>Hi!</h1>
-          </body>
-      </html>
-  */});
+    if (yield this.cashed()) return;
+    this.set('Content-Type', 'text/html');
+    this.body = multiline.stripIndent(function(){/*
+        <!doctype html>
+        <html>
+            <head>
+                <title></title>
+            </head>
+            <body>
+                <h1>Hi!</h1>
+            </body>
+        </html>
+    */});
 });
 
 function optimizeImage(file) {
+    console.log("Optimizing file:", file);
     var optimizer = new imgopti({
         input: [], // directory or file
         output: null, // output directory, if not , overwrite original file and save original file like xxx-old.xxx
@@ -98,7 +104,7 @@ function optimizeImage(file) {
             console.log("Optimized file:", file);
         },
         onComplete: function(count) { // callback when all files are processed
-
+            console.log("Optimized files:", count);
         }
     });
     optimizer.process();
@@ -112,7 +118,7 @@ router.post('/upload', bodyParser, function *(next) {
     }
     var id = shortid.generate();
     var filePath = path.join(uploadsDir, id);
-    yield fs.rename(upload.path, filePath);
+    yield cofs.rename(upload.path, filePath);
     optimizeImage(filePath);
     console.log('Saved file', id);
     this.status = 200;
@@ -125,13 +131,13 @@ router.get('image', /^\/([0-9a-zA-Z_\-]+)(?:\.jpg|\.gif|\.png|\.bmp)?$/, functio
     console.log('GET', this.params[0]);
     if (yield this.cashed()) return;
     var file = path.join(uploadsDir, this.params[0]);
-    if (yield fs.exists(file)) {
+    if (yield cofs.exists(file)) {
         var buffer = readChunk.sync(file, 0, 262);
         var type = fileType(buffer);
         if (['png', 'jpg', 'bmp', 'gif'].indexOf(type.ext) != -1) {
             this.status = 200;
             this.type = type.mime;
-            this.body = yield fs.createReadStream(file);
+            this.body = yield cofs.createReadStream(file);
         } else {
             this.status = 500;
         }
