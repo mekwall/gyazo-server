@@ -8,7 +8,14 @@ const readChunk = require('read-chunk');
 const fileType = require('file-type');
 const thunkify = require('thunkify');
 const multiline = require('multiline');
-const imgopti = require('imgopti');
+const imagemin = require('imagemin');
+const imageminPlugins = {
+    optipng: require('imagemin-optipng'),
+    pngquant: require('imagemin-pngquant'),
+    svgo: require('imagemin-svgo'),
+    gifsicle: require('imagemin-gifsicle'),
+    mozjpeg: require('imagemin-mozjpeg')
+};
 
 const koa = require('koa');
 const app = koa();
@@ -16,6 +23,8 @@ const router = require('koa-router')();
 
 const tmpDir = path.join(process.cwd(), '/tmp');
 const uploadsDir = path.join(process.cwd(), '/uploads');
+
+const isProduction = process.env.NODE_ENV === "production";
 
 const bodyParser = require('koa-body')({ 
     multipart: true,
@@ -74,37 +83,83 @@ app.use(function *pageNotFound(next){
 router.get('/', function *(next) {
     if (yield this.cashed()) return;
     this.set('Content-Type', 'text/html');
-    this.body = multiline.stripIndent(function(){/*
-        <!doctype html>
-        <html>
-            <head>
-                <title></title>
-            </head>
-            <body>
-                <h1>Hi!</h1>
-            </body>
-        </html>
-    */});
+    if (isProduction) {
+        this.body = multiline.stripIndent(function(){/*
+            <!doctype html>
+            <html>
+                <head>
+                    <title></title>
+                </head>
+                <body>
+                    <h1>Hi!</h1>
+                </body>
+            </html>
+        */});
+    } else {
+        this.body = multiline.stripIndent(function(){/*
+            <!doctype html>
+            <html>
+                <head>
+                    <title></title>
+                </head>
+                <body>
+                    <form action="/upload" enctype="multipart/form-data" method="post">
+                    <input type="file" name="imagedata"><br>
+                    <button type="submit">Upload</button>
+                </body>
+            </html>
+        */});
+    }
 });
 
-function optimizeImage(file, cb) {
-    console.log("Optimizing file:", file);
-    var optimizer = new imgopti({
-        input: [], // directory or file
-        output: null, // output directory, if not , overwrite original file and save original file like xxx-old.xxx
-        matchRules: [ // image filter rules
-            '*'
-        ],
-        lossy: 20, // default value: 20
-        force: 1, //  overwrite original file and  do not save original image
-        onFileProcessed: function (newFile, oldFile) { // callback when a file is processed
-            console.log("Optimized file:", file);
-        },
-        onComplete: function(count) { // callback when all files are processed
-            cb(null, count);
+function optimizeImage(source, dest, cb) {
+    console.log("Optimizing file:", source);
+    var buffer = readChunk.sync(source, 0, 262);
+    var type = fileType(buffer);
+    var optimizer = new imagemin()
+        .src(source)
+        .dest(path.join(tmpDir, '/opt'));
+
+    switch (type.ext) {
+        case 'png':
+            optimizer.use(imageminPlugins.pngquant({
+                quality: '65-80', 
+                speed: 3
+            }));
+            optimizer.use(imageminPlugins.optipng({
+                optimizationLevel: 4
+            }));
+        break;
+
+        case 'jpg':
+        case 'jpeg':
+            optimizer.use(imageminPlugins.mozjpeg({
+                quality: 80
+            }));
+        break;
+
+        case 'gif':
+            optimizer.use(imageminPlugins.gifsicle({
+                interlaced: true
+            }));
+        break;
+
+        case 'svg':
+            optimizer.use(imageminPlugins.svgo()());
+        break;
+    }
+
+    optimizer.run(function (err, files) {
+        if (err) {
+            fs.rename(source, dest, function (err){
+                fs.unlinkSync(source);
+                cb(err);
+            });
+            return;
         }
+        fs.unlinkSync(source);
+        fs.rename(path.join(tmpDir, '/opt', path.basename(source)), dest, cb);
     });
-    optimizer.process();
 };
 
 router.post('/upload', bodyParser, function *(next) {
@@ -112,11 +167,11 @@ router.post('/upload', bodyParser, function *(next) {
     if (!upload) {
         this.status = 400;
         yield next;
+        return;
     }
     var id = shortid.generate();
     var filePath = path.join(uploadsDir, id);
-    yield cofs.rename(upload.path, filePath);
-    yield thunkify(optimizeImage)(filePath);
+    yield thunkify(optimizeImage)(upload.path, filePath);
     console.log('Saved file', id);
     this.status = 200;
     this.body = (this.request.protocol || 'http') + '://' + this.request.host + '/' + id + '.png';
@@ -131,10 +186,10 @@ router.get('image', /^\/([0-9a-zA-Z_\-]+)(?:\.jpg|\.gif|\.png|\.bmp)?$/, functio
     if (yield cofs.exists(file)) {
         var buffer = readChunk.sync(file, 0, 262);
         var type = fileType(buffer);
-        if (['png', 'jpg', 'bmp', 'gif'].indexOf(type.ext) != -1) {
+        if (['png', 'jpg', 'bmp', 'gif', 'svg'].indexOf(type.ext) != -1) {
             this.status = 200;
             this.type = type.mime;
-            this.body = yield cofs.createReadStream(file);
+            this.body = fs.createReadStream(file);
         } else {
             this.status = 500;
         }

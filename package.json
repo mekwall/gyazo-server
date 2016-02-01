@@ -1,6 +1,6 @@
 {
   "name": "mekwall",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,12 @@
   "dependencies": {
     "co-fs-extra": "^1.1.0",
     "file-type": "^3.6.0",
-    "imgopti": "^0.2.2",
+    "imagemin": "^4.0.0",
+    "imagemin-gifsicle": "^4.2.0",
+    "imagemin-mozjpeg": "^5.1.0",
+    "imagemin-optipng": "^4.3.0",
+    "imagemin-pngquant": "^4.2.0",
+    "imagemin-svgo": "^4.2.0",
     "koa": "^1.1.2",
     "koa-body": "^1.4.0",
     "koa-cash": "^2.0.0",
