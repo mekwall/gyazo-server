@@ -93,10 +93,7 @@ function optimizeImage(file, cb) {
         input: [], // directory or file
         output: null, // output directory, if not , overwrite original file and save original file like xxx-old.xxx
         matchRules: [ // image filter rules
-            '*.jpeg',
-            '*.jpg',
-            '*.png',
-            '*.gif'
+            '*'
         ],
         lossy: 20, // default value: 20
         force: 1, //  overwrite original file and  do not save original image
