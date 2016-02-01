@@ -18,6 +18,9 @@ const uploadsDir = path.join(process.cwd(), '/uploads');
 
 const bodyParser = require('koa-body')({ 
     multipart: true,
+    jsonLimit: "10mb",
+    formLimit: "10mb",
+    textLimit: "1mb",
     formidable: {
         uploadDir: tmpDir
     }
@@ -81,7 +84,7 @@ router.get('/', function *(next) {
 
 function optimizeImage(file) {
     var optimizer = new imgopti({
-        input: [file], // directory or file
+        input: [], // directory or file
         output: null, // output directory, if not , overwrite original file and save original file like xxx-old.xxx
         matchRules: [ // image filter rules
             '*.jpeg',
