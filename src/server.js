@@ -87,7 +87,7 @@ router.get('/', function *(next) {
     */});
 });
 
-function optimizeImage(file) {
+function optimizeImage(file, cb) {
     console.log("Optimizing file:", file);
     var optimizer = new imgopti({
         input: [], // directory or file
@@ -104,7 +104,7 @@ function optimizeImage(file) {
             console.log("Optimized file:", file);
         },
         onComplete: function(count) { // callback when all files are processed
-            console.log("Optimized files:", count);
+            cb(null, count);
         }
     });
     optimizer.process();
@@ -119,7 +119,7 @@ router.post('/upload', bodyParser, function *(next) {
     var id = shortid.generate();
     var filePath = path.join(uploadsDir, id);
     yield cofs.rename(upload.path, filePath);
-    optimizeImage(filePath);
+    yield thunkify(optimizeImage)(filePath);
     console.log('Saved file', id);
     this.status = 200;
     this.body = (this.request.protocol || 'http') + '://' + this.request.host + '/' + id + '.png';

@@ -16,6 +16,7 @@
   "dependencies": {
     "co-fs-extra": "^1.1.0",
     "file-type": "^3.6.0",
+    "imgopti": "^0.2.2",
     "koa": "^1.1.2",
     "koa-body": "^1.4.0",
     "koa-cash": "^2.0.0",
@@ -25,7 +26,6 @@
     "multiline": "^1.0.2",
     "read-chunk": "^1.0.1",
     "shortid": "^2.2.4",
-    "thunkify": "^2.1.2",
-    "imgopti": "^0.2.2"
+    "thunkify": "^2.1.2"
   }
 }
