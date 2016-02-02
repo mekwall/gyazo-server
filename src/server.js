@@ -3,7 +3,7 @@ const cofs = require('co-fs-extra');
 const path = require('path');
 const shortid = require('shortid');
 const mime = require('mime-types');
-const cache = require('lru-cache')();
+const cache = require('lru-cache')({ maxAge: 31556926 });
 const readChunk = require('read-chunk');
 const fileType = require('file-type');
 const thunkify = require('thunkify');
@@ -57,7 +57,7 @@ app.use(require('koa-cash')({
 app.use(function *pageNotFound(next){
     yield next;
 
-    if (404 != this.status) return;
+    if (404 !== this.status) return;
 
     // we need to explicitly set 404 here
     // so that koa doesn't assign 200 on body=
@@ -81,8 +81,13 @@ app.use(function *pageNotFound(next){
 });
 
 router.get('/', function *(next) {
-    if (yield this.cashed()) return;
+    if (yield this.cashed()) {
+        this.status = 304;
+        return
+    }
     this.set('Content-Type', 'text/html');
+    this.set('Last-Modified', new Date());
+    this.set('Cache-Control', 'public, max-age=31556926');
     if (isProduction) {
         this.body = multiline.stripIndent(function(){/*
             <!doctype html>
@@ -181,12 +186,17 @@ router.post('/upload', bodyParser, function *(next) {
 
 router.get('image', /^\/([0-9a-zA-Z_\-]+)(?:\.jpg|\.gif|\.png|\.bmp)?$/, function *(next) {
     console.log('GET', this.params[0]);
-    if (yield this.cashed()) return;
+    if (yield this.cashed()) {
+        this.status = 304;
+        return;
+    }
     var file = path.join(uploadsDir, this.params[0]);
     if (yield cofs.exists(file)) {
         var buffer = readChunk.sync(file, 0, 262);
         var type = fileType(buffer);
         if (['png', 'jpg', 'bmp', 'gif', 'svg'].indexOf(type.ext) != -1) {
+            this.set('Last-Modified', new Date());
+            this.set('Cache-Control', 'max-age=31556926');
             this.status = 200;
             this.type = type.mime;
             this.body = fs.createReadStream(file);
