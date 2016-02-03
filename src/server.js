@@ -82,8 +82,7 @@ app.use(function *pageNotFound(next){
 
 router.get('/', function *(next) {
     if (yield this.cashed()) {
-        this.status = 304;
-        return
+        return;
     }
     this.set('Content-Type', 'text/html');
     this.set('Last-Modified', new Date());
@@ -108,6 +107,7 @@ router.get('/', function *(next) {
                     <title></title>
                 </head>
                 <body>
+                    <h1>Test</h1>
                     <form action="/upload" enctype="multipart/form-data" method="post">
                     <input type="file" name="imagedata"><br>
                     <button type="submit">Upload</button>
@@ -187,7 +187,6 @@ router.post('/upload', bodyParser, function *(next) {
 router.get('image', /^\/([0-9a-zA-Z_\-]+)(?:\.jpg|\.gif|\.png|\.bmp)?$/, function *(next) {
     console.log('GET', this.params[0]);
     if (yield this.cashed()) {
-        this.status = 304;
         return;
     }
     var file = path.join(uploadsDir, this.params[0]);
@@ -196,6 +195,7 @@ router.get('image', /^\/([0-9a-zA-Z_\-]+)(?:\.jpg|\.gif|\.png|\.bmp)?$/, functio
         var type = fileType(buffer);
         if (['png', 'jpg', 'bmp', 'gif', 'svg'].indexOf(type.ext) != -1) {
             this.set('Last-Modified', new Date());
+            this.set('ETag', this.params[0]);
             this.set('Cache-Control', 'max-age=31556926');
             this.status = 200;
             this.type = type.mime;
