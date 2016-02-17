@@ -135,7 +135,7 @@ router.get('/', function *(next) {
 
 function moveFile(source, dest, cb) {
     var readStream = fs.createReadStream(source);
-    var writeStream = fs.writeStream(dest);
+    var writeStream = fs.createWriteStream(dest);
     readStream.pipe(writeStream);
     readStream.on('end', function () {
         fs.unlinkSync(source);
