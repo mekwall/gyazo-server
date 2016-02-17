@@ -1,7 +1,7 @@
 {
   "name": "mekwall",
-  "version": "1.1.0",
-  "description": "",
+  "version": "1.2.0",
+  "description": "A image uploading server with Gyazo support",
   "main": "index.js",
   "scripts": {
     "start": "node index",
@@ -13,6 +13,10 @@
   },
   "author": "Marcus Ekwall <marcus.ekwall@gmail.com>",
   "license": "ISC",
+  "engines": {
+    "node": "~5.0.0",
+    "npm": "~3.3.0"
+  },
   "dependencies": {
     "co-fs-extra": "^1.1.0",
     "file-type": "^3.6.0",
@@ -22,11 +26,8 @@
     "imagemin-optipng": "^4.3.0",
     "imagemin-pngquant": "^4.2.0",
     "imagemin-svgo": "^4.2.0",
-    "koa": "^1.1.2",
-    "koa-body": "^1.4.0",
-    "koa-cash": "^2.0.0",
+    "koala": "^1.0.0",
     "koa-router": "^5.3.0",
-    "lru-cache": "^4.0.0",
     "mime-types": "^2.1.9",
     "multiline": "^1.0.2",
     "read-chunk": "^1.0.1",
