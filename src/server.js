@@ -25,6 +25,7 @@ var config;
 try {
     var config = require('../config');
 } catch (e) {
+    console.error(e);
     var config = {};
 }
 
@@ -44,11 +45,19 @@ const bodyParser = require('koa-body')({
 });
 
 if (!fs.existsSync(tmpDir)) {
-    fs.mkdirSync(tmpDir);
+    try {
+        fs.mkdirSync(tmpDir);
+    } catch (e) {
+        console.error("Failed to create tmpDir:", tmpDir);
+    }
 }
 
 if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
+    try {
+        fs.mkdirSync(uploadsDir);
+    } catch (e) {
+        console.error("Failed to create tmpDir:", uploadsDir);
+    }
 }
 
 app.use(require('koa-cash')({
