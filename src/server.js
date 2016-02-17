@@ -21,8 +21,15 @@ const koa = require('koa');
 const app = koa();
 const router = require('koa-router')();
 
-const tmpDir = path.join(process.cwd(), '/tmp');
-const uploadsDir = path.join(process.cwd(), '/uploads');
+var config;
+try {
+    var config = require('../config');
+} catch (e) {
+    var config = {};
+}
+
+const tmpDir = config.tmpDir || path.join(process.cwd(), '/tmp');
+const uploadsDir = config.uploadsDir || path.join(process.cwd(), '/uploads');
 
 const isProduction = process.env.NODE_ENV === "production";
 
