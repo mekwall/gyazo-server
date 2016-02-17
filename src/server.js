@@ -143,8 +143,8 @@ function moveFile(source, dest, cb) {
     });
     readStream.on('error', function (err) {
         cb(err);
-    };
-};
+    });
+}
 
 function optimizeImage(source, dest, cb) {
     console.log("Optimizing file:", source);
@@ -190,7 +190,7 @@ function optimizeImage(source, dest, cb) {
             cb
         );
     });
-};
+}
 
 router.post('/upload', bodyParser, function *(next) {
     var upload = this.request.body.files.imagedata;
