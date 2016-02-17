@@ -1,5 +1,5 @@
 {
-  "name": "mekwall",
+  "name": "gyazo-server",
   "version": "1.2.0",
   "description": "A image uploading server with Gyazo support",
   "main": "index.js",
