@@ -207,8 +207,12 @@ function optimizeImage(source, dest, cb) {
     }
 
     optimizer.run(function (err, files) {
+        if (!err) {
+            // Remove source if optimization was successful
+            cofs.remove(source)();
+        }
         cofs.move(
-            err ? path.join(tmpDir, '/opt', path.basename(source)) : source,
+            err ? source : path.join(tmpDir, '/opt', path.basename(source)),
             dest
         )(cb);
     });
