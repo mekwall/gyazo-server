@@ -14,8 +14,8 @@
   "author": "Marcus Ekwall <marcus.ekwall@gmail.com>",
   "license": "ISC",
   "engines": {
-    "node": "~5.0.0",
-    "npm": "~3.3.0"
+    "node": "^5.0.0",
+    "npm": "^3.3.0"
   },
   "dependencies": {
     "co-fs-extra": "^1.1.0",
