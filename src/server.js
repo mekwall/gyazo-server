@@ -133,6 +133,19 @@ router.get('/', function *(next) {
     }
 });
 
+function moveFile(source, dest, cb) {
+    var readStream = fs.createReadStream(source);
+    var writeStream = fs.writeStream(dest);
+    readStream.pipe(writeStream);
+    readStream.on('end', function () {
+        fs.unlinkSync(source);
+        cb();
+    });
+    readStream.on('error', function (err) {
+        cb(err);
+    };
+};
+
 function optimizeImage(source, dest, cb) {
     console.log("Optimizing file:", source);
     var buffer = readChunk.sync(source, 0, 262);
@@ -171,15 +184,11 @@ function optimizeImage(source, dest, cb) {
     }
 
     optimizer.run(function (err, files) {
-        if (err) {
-            fs.rename(source, dest, function (err){
-                fs.unlinkSync(source);
-                cb(err);
-            });
-            return;
-        }
-        fs.unlinkSync(source);
-        fs.rename(path.join(tmpDir, '/opt', path.basename(source)), dest, cb);
+        moveFile(
+            err ? path.join(tmpDir, '/opt', path.basename(source)) : source,
+            dest,
+            cb
+        );
     });
 };
 
